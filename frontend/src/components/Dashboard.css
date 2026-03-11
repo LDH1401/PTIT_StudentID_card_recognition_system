@@ -1,0 +1,151 @@
+/* --- BỐ CỤC TỔNG THỂ --- */
+.dashboard-container {
+  padding: 30px;
+  font-family: sans-serif;
+  background-color: #f4f6f9;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  margin-bottom: 30px;
+}
+
+.dashboard-title {
+  color: #d12027;
+  margin: 0;
+}
+
+.dashboard-subtitle {
+  color: #666;
+  margin-top: 5px;
+}
+
+.dashboard-content {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* --- CÁC KHỐI CARD (Cột trái & phải) --- */
+.dashboard-card {
+  background-color: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-left {
+  flex: 1;
+}
+
+.card-right {
+  flex: 2;
+}
+
+.card-title {
+  margin-top: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.card-title.bordered {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.card-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* --- FORM THÊM SINH VIÊN --- */
+.student-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+  font-size: 14px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.btn-submit {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+  width: 100%;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+  background-color: #218838;
+}
+
+/* --- BẢNG VÀ CÁC TRẠNG THÁI HIỂN THỊ --- */
+.badge-count {
+  background-color: #dc3545;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 15px;
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.status-box {
+  padding: 40px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.status-loading {
+  color: #666;
+}
+
+.status-error {
+  padding: 20px;
+  color: #721c24;
+  background-color: #f8d7da;
+}
+
+.status-success {
+  color: #28a745;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #d4edda;
+}
+
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table-head-row {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.student
