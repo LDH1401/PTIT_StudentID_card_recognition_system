@@ -8,7 +8,26 @@ const UploadImage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Hàm chuyển đổi ảnh Base64 từ Webcam thành dạng File (Blob) để gửi cho FastAPI
+  // --- HÀM MỚI: TẠO TIẾNG "TÍT" BẰNG WEB AUDIO API ---
+  const playSuccessSound = () => {
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+    oscillator.stop(audioCtx.currentTime + 0.2);
+  };
+  // --------------------------------------------------
+
+  // Hàm chuyển đổi ảnh Base64 từ Webcam thành dạng File (Blob)
   const dataURLtoBlob = (dataurl) => {
     let arr = dataurl.split(","),
       mime = arr[0].match(/:(.*?);/)[1];
@@ -33,7 +52,7 @@ const UploadImage = () => {
     const imageSrc = webcamRef.current.getScreenshot();
 
     if (!imageSrc) {
-      setError("Không thể chụp ảnh. Vui lòng kiểm tra lại Camera.");
+      setError("Không thể chụp ảnh. Vui lòng thử lại.");
       setIsLoading(false);
       return;
     }
@@ -41,9 +60,8 @@ const UploadImage = () => {
     // 2. Chuyển đổi và đóng gói ảnh
     const blob = dataURLtoBlob(imageSrc);
     const formData = new FormData();
-    formData.append("file", blob, "webcam_capture.jpg"); // Gửi dưới tên file 'webcam_capture.jpg'
+    formData.append("file", blob, "webcam_capture.jpg");
 
-    // 3. Gọi API FastAPI
     try {
       const response = await fetch("http://127.0.0.1:8000/attendance/checkin", {
         method: "POST",
@@ -53,19 +71,19 @@ const UploadImage = () => {
       const data = await response.json();
       console.log("API DATA:", data);
 
-      // SỬA CHỖ NÀY: Dùng data.success để quyết định thành công hay thất bại
       if (data.success) {
         setStudentId(data.student_code);
-        // (Tùy chọn) Phát tiếng "Tít" khi thành công ở đây
+        
+        playSuccessSound();
+
       } else {
-        // Lấy thông báo lỗi từ Backend (ví dụ: "Bạn không có trong danh sách lớp!")
         setError(
           data.message || "Không tìm thấy mã sinh viên. Hãy thử đưa thẻ vào sát khung hơn!",
         );
       }
     } catch (err) {
       console.error(err);
-      setError("Lỗi kết nối đến máy chủ AI.");
+      setError("Lỗi kết nối đến máy chủ");
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +101,7 @@ const UploadImage = () => {
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             width="100%"
-            videoConstraints={{ facingMode: "environment" }} // Ưu tiên camera sau nếu dùng điện thoại
+            videoConstraints={{ facingMode: "environment" }} 
           />
           {/* Khung ngắm đứt nét */}
           <div className="webcam-guideline"></div>
@@ -95,7 +113,7 @@ const UploadImage = () => {
           onClick={captureAndUpload}
           disabled={isLoading}
         >
-          {isLoading ? "Đang nhận diện..." : "Chụp & Nhận Diện"}
+          {isLoading ? "Đang nhận diện..." : "Chụp"}
         </button>
 
         {/* Khu vực hiển thị kết quả */}
@@ -105,7 +123,17 @@ const UploadImage = () => {
           {!error && studentId && (
             <div className="result-box result-success">
               ✅ Điểm danh thành công! <br />
-              <span>{studentId}</span>
+              <span
+                style={{
+                  fontSize: "26px",
+                  fontWeight: "bold",
+                  display: "block",
+                  marginTop: "8px",
+                  color: "#d12027",
+                }}
+              >
+                {studentId}
+              </span>
             </div>
           )}
           {!error && !studentId && !isLoading && (

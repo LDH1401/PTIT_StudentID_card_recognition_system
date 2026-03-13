@@ -1,40 +1,39 @@
 import React, { useState, useEffect } from 'react';
+import './Dashboard.css'; 
 
 const Dashboard = () => {
-  // 1. STATE: Lưu danh sách sinh viên và trạng thái tải dữ liệu
+  // 1. STATE
   const [absentStudents, setAbsentStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 2. STATE: Form thêm sinh viên mới
   const [newMssv, setNewMssv] = useState('');
   const [newName, setNewName] = useState('');
 
-  // 3. EFFECT: Tự động lấy danh sách sinh viên khi vừa mở trang
   useEffect(() => {
     fetchStudents();
   }, []);
 
-  // Hàm GET: Gọi API lấy danh sách sinh viên từ Backend
+  // 3. API GET: Lấy danh sách vắng
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/students/');
+      const response = await fetch('http://127.0.0.1:8000/students/absent');
       if (!response.ok) {
-        throw new Error('Không thể kết nối với máy chủ Backend');
+        throw new Error('Không thể kết nối với máy chủ');
       }
       const data = await response.json();
       setAbsentStudents(data);
       setError(null);
     } catch (err) {
       console.error(err);
-      setError('Lỗi tải dữ liệu. Hãy đảm bảo FastAPI đang chạy (uvicorn app.main:app).');
+      setError('Lỗi tải dữ liệu...');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 4. Hàm POST: Gửi dữ liệu sinh viên mới xuống Database
+  // 4. API POST: Thêm sinh viên
   const handleAddStudent = async (e) => {
     e.preventDefault(); 
     
@@ -51,19 +50,16 @@ const Dashboard = () => {
         },
         body: JSON.stringify({
           student_code: newMssv.toUpperCase().trim(),
-          name: newName.trim(),
-          class_name: "Chưa phân lớp" // Trường này tùy chọn dựa theo schemas.py của bạn
+          name: newName.trim()
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Bắt lỗi từ Backend (ví dụ: Trùng mã MSSV)
         throw new Error(data.detail || "Có lỗi xảy ra khi thêm sinh viên");
       }
 
-      // Thêm thành công: Cập nhật lại bảng và xóa trắng form
       setAbsentStudents([...absentStudents, data]);
       setNewMssv('');
       setNewName('');
@@ -75,119 +71,149 @@ const Dashboard = () => {
     }
   };
 
+  // 5. API POST: Điểm danh thủ công
+  const handleManualCheckin = async (studentCode) => {
+    if (!window.confirm(`Xác nhận điểm danh có mặt cho sinh viên: ${studentCode}?`)) return;
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/attendance/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_code: studentCode }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Có lỗi xảy ra khi điểm danh");
+
+      // Xóa mượt mà khỏi giao diện
+      setAbsentStudents(absentStudents.filter(stu => stu.student_code !== studentCode));
+
+    } catch (err) {
+      console.error(err);
+      alert(`Lỗi: ${err.message}`);
+    }
+  };
+
+  // 6. API DELETE: Reset dữ liệu
+  const handleResetAttendance = async () => {
+    if (!window.confirm("Bạn có chắc chắn muốn reset?")) return;
+    
+    try {
+      const response = await fetch('http://127.0.0.1:8000/attendance/reset', {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error("Lỗi khi làm mới dữ liệu");
+      
+      alert("Đã làm mới danh sách thành công!");
+      fetchStudents(); 
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi: Không thể làm mới dữ liệu.");
+    }
+  };
+
   return (
-    <div style={{ padding: '30px', fontFamily: 'sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
+    <div className="dashboard-container">
       
       {/* HEADER */}
-      <div style={{ marginBottom: '30px' }}>
-        <h1 style={{ color: '#d12027', margin: 0 }}>📊 Dashboard Quản Lý Lớp Học</h1>
-        <p style={{ color: '#666', marginTop: '5px' }}>Chỉ hiển thị sinh viên chưa điểm danh</p>
+      <div className="dashboard-header">
+        <h1 className="dashboard-title">Quản Lý Lớp Học</h1>
       </div>
 
-      <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
+      <div className="dashboard-content">
         
         {/* CỘT TRÁI: FORM THÊM SINH VIÊN MỚI */}
-        <div style={{ flex: 1, backgroundColor: 'white', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ marginTop: 0, fontSize: '20px', color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-            ➕ Thêm Sinh Viên Mới
-          </h2>
-          
-          <form onSubmit={handleAddStudent} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+        <div className="dashboard-card card-left">
+          <h2 className="card-title bordered">➕ Thêm Sinh Viên Mới</h2>
+          <form onSubmit={handleAddStudent} className="student-form">
             <div>
-              <label style={labelStyle}>Mã Sinh Viên (MSSV):</label>
+              <label className="form-label">Mã Sinh Viên (MSSV):</label>
               <input 
                 type="text" 
                 placeholder="VD: B23DCCN313" 
                 value={newMssv}
                 onChange={(e) => setNewMssv(e.target.value)}
-                style={inputStyle}
+                className="form-input"
               />
             </div>
-            
             <div>
-              <label style={labelStyle}>Họ và Tên:</label>
+              <label className="form-label">Họ và Tên:</label>
               <input 
                 type="text" 
-                placeholder="VD: Trần Văn Hiếu" 
+                placeholder="VD: Lê Duy Hùng" 
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                style={inputStyle}
+                className="form-input"
               />
             </div>
-
-            <button type="submit" style={btnStyle('#28a745')}>
-              💾 Lưu vào Database
-            </button>
+            <button type="submit" className="btn-submit">Lưu</button>
           </form>
         </div>
 
-        {/* CỘT PHẢI: BẢNG SINH VIÊN CHƯA ĐIỂM DANH */}
-        <div style={{ flex: 2, backgroundColor: 'white', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h2 style={{ margin: 0, fontSize: '20px', color: '#333' }}>
+        {/* CỘT PHẢI: BẢNG SINH VIÊN & NÚT RESET */}
+        <div className="dashboard-card card-right">
+          
+          <div className="card-title-wrapper">
+            <h2 className="card-title">
               ⚠️ Danh sách Vắng mặt 
-              <span style={{ backgroundColor: '#dc3545', color: 'white', padding: '3px 10px', borderRadius: '15px', fontSize: '14px', marginLeft: '10px' }}>
-                {absentStudents.length}
-              </span>
+              <span className="badge-count">{absentStudents.length}</span>
             </h2>
           </div>
           
-          {/* Xử lý các trạng thái hiển thị: Lỗi, Đang tải, hoặc Trống */}
+          {/* TRẠNG THÁI HIỂN THỊ */}
           {isLoading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#666', fontSize: '16px' }}>
-              ⏳ Đang tải dữ liệu từ máy chủ...
-            </div>
+            <div className="status-box status-loading">⏳ Đang tải dữ liệu từ máy chủ...</div>
           ) : error ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#721c24', backgroundColor: '#f8d7da', borderRadius: '8px' }}>
-              ❌ {error}
-            </div>
+            <div className="status-box status-error">❌ {error}</div>
           ) : absentStudents.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#28a745', fontSize: '18px', fontWeight: 'bold', backgroundColor: '#d4edda', borderRadius: '8px' }}>
-              🎉 Tuyệt vời! Tất cả sinh viên đã có mặt (hoặc lớp chưa có ai).
-            </div>
+            <div className="status-box status-success">🎉 Tuyệt vời! Tất cả sinh viên đã có mặt (hoặc lớp chưa có ai).</div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table className="student-table">
               <thead>
-                <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                  <th style={thStyle}>STT</th>
-                  <th style={thStyle}>Mã Sinh Viên</th>
-                  <th style={thStyle}>Họ và Tên</th>
-                  <th style={thStyle}>Trạng thái</th>
+                <tr className="table-head-row">
+                  <th>STT</th>
+                  <th>Mã Sinh Viên</th>
+                  <th>Họ và Tên</th>
+                  <th>Trạng thái</th>
+                  <th>Điểm danh</th>
                 </tr>
               </thead>
               <tbody>
                 {absentStudents.map((stu, index) => (
-                  <tr key={stu.id || index} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={tdStyle}>{index + 1}</td>
-                    <td style={{ ...tdStyle, fontWeight: 'bold', color: '#d12027' }}>{stu.student_code}</td>
-                    <td style={tdStyle}>{stu.name}</td>
-                    <td style={tdStyle}>
-                      <span style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '5px 10px', borderRadius: '5px', fontSize: '13px', fontWeight: 'bold' }}>
-                        Chưa điểm danh
-                      </span>
+                  <tr key={stu.id || index} className="table-body-row">
+                    <td>{index + 1}</td>
+                    <td className="td-student-code">{stu.student_code}</td>
+                    <td>{stu.name}</td>
+                    <td>
+                      <span className="badge-absent">Chưa điểm danh</span>
+                    </td>
+                    {/* NÚT ACTION ĐÃ ĐƯỢC CHO VÀO THẺ <td> */}
+                    <td>
+                      <button 
+                        className="btn-action btn-present"
+                        onClick={() => handleManualCheckin(stu.student_code)}
+                      >
+                        ✔️ Có mặt
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
+
+          {/* NÚT RESET ĐƯỢC DỜI XUỐNG ĐÁY CARD */}
+          <div className="card-footer">
+            <button className="btn-reset" onClick={handleResetAttendance}>
+              🔄 Reset Buổi Học
+            </button>
+          </div>
+
         </div>
 
       </div>
     </div>
   );
 };
-
-
-
-// --- STYLING ---
-const labelStyle = { display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555', fontSize: '14px' };
-const inputStyle = { width: '100%', padding: '12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '15px', boxSizing: 'border-box' };
-const thStyle = { padding: '15px', color: '#495057' };
-const tdStyle = { padding: '15px', color: '#212529' };
-const btnStyle = (bgColor) => ({
-  backgroundColor: bgColor, color: 'white', border: 'none', padding: '12px',
-  borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', width: '100%', marginTop: '10px'
-});
 
 export default Dashboard;

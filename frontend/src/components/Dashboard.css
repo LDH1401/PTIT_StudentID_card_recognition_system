@@ -1,7 +1,7 @@
 /* --- BỐ CỤC TỔNG THỂ --- */
 .dashboard-container {
   padding: 30px;
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   min-height: 100vh;
 }
@@ -13,11 +13,13 @@
 .dashboard-title {
   color: #d12027;
   margin: 0;
+  font-size: 28px;
 }
 
 .dashboard-subtitle {
   color: #666;
   margin-top: 5px;
+  font-size: 15px;
 }
 
 .dashboard-content {
@@ -30,8 +32,8 @@
 .dashboard-card {
   background-color: white;
   padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
 }
 
 .card-left {
@@ -45,98 +47,109 @@
 .card-title {
   margin-top: 0;
   font-size: 20px;
-  color: #333;
+  color: #2c3e50;
 }
 
 .card-title.bordered {
-  border-bottom: 2px solid #eee;
-  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 12px;
 }
 
 .card-title-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 /* --- FORM THÊM SINH VIÊN --- */
 .student-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
   margin-top: 20px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #555;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #444;
   font-size: 14px;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 15px;
+  padding: 12px 15px;
+  border: 1px solid #dce1e6;
+  border-radius: 8px;
+  font-size: 14px;
   box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #d12027;
 }
 
 .btn-submit {
   background-color: #28a745;
   color: white;
   border: none;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   font-size: 15px;
   width: 100%;
   margin-top: 10px;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease-in-out;
 }
 
 .btn-submit:hover {
   background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
 }
 
 /* --- BẢNG VÀ CÁC TRẠNG THÁI HIỂN THỊ --- */
 .badge-count {
   background-color: #dc3545;
   color: white;
-  padding: 3px 10px;
-  border-radius: 15px;
+  padding: 4px 12px;
+  border-radius: 20px;
   font-size: 14px;
   margin-left: 10px;
 }
 
 .status-box {
-  padding: 40px;
+  padding: 50px 20px;
   text-align: center;
   border-radius: 8px;
   font-size: 16px;
 }
 
 .status-loading {
-  color: #666;
+  color: #6c757d;
+  background-color: #f8f9fa;
 }
 
 .status-error {
-  padding: 20px;
   color: #721c24;
   background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
 }
 
 .status-success {
-  color: #28a745;
+  color: #155724;
   font-size: 18px;
   font-weight: bold;
   background-color: #d4edda;
+  border: 1px solid #c3e6cb;
 }
 
+/* Table Design */
 .student-table {
   width: 100%;
   border-collapse: collapse;
@@ -148,4 +161,92 @@
   border-bottom: 2px solid #dee2e6;
 }
 
-.student
+.student-table th {
+  padding: 15px;
+  color: #495057;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.student-table td {
+  padding: 15px;
+  color: #212529;
+  font-size: 15px;
+  vertical-align: middle;
+}
+
+.table-body-row {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.15s;
+}
+
+.table-body-row:hover {
+  background-color: #fcfcfc;
+}
+
+.td-student-code {
+  font-weight: 700;
+  color: #d12027 !important;
+}
+
+.badge-absent {
+  background-color: #fef0f0;
+  color: #d12027;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #fbc4c4;
+}
+
+/* --- NÚT HÀNH ĐỘNG --- */
+.btn-action {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.btn-present {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-present:hover {
+  background-color: #138496;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(23, 162, 184, 0.3);
+}
+
+/* --- NÚT RESET DƯỚI CÙNG --- */
+.card-footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end; /* Căn phải */
+}
+
+.btn-reset {
+  background-color: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-reset:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+}

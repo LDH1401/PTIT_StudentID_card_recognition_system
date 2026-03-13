@@ -25,3 +25,4 @@ app.add_middleware(
 
 app.include_router(student_router.router)
 app.include_router(attendance_router.router)
+

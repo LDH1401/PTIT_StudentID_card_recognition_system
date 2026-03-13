@@ -51,3 +51,36 @@ async def checkin(file: UploadFile = File(...), db: Session = Depends(get_db)):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
+
+
+from pydantic import BaseModel
+
+# Tạo một Schema nhỏ để nhận dữ liệu JSON từ React gửi lên
+class ManualCheckinRequest(BaseModel):
+    student_code: str
+
+@router.post("/manual")
+def manual_checkin(request: ManualCheckinRequest, db: Session = Depends(get_db)):
+    try:
+        # 1. Kiểm tra xem sinh viên có trong lớp không
+        student = crud.get_student_by_code(db, student_code=request.student_code)
+        if not student:
+            raise HTTPException(status_code=404, detail="Không tìm thấy sinh viên")
+
+        # 2. Ghi nhận điểm danh
+        crud.record_attendance(db, student_code=request.student_code)
+        
+        return {
+            "success": True, 
+            "message": f"Điểm danh thành công cho {request.student_code}"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.delete("/reset")
+def reset_all_attendance(db: Session = Depends(get_db)):
+    try:
+        crud.reset_attendance(db)
+        return {"success": True, "message": "Đã làm mới danh sách điểm danh"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

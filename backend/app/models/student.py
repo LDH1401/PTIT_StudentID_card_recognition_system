@@ -12,8 +12,6 @@ class Student(Base):
 
     name = Column(String(100))
 
-    class_name = Column(String(50))
-
     attendances = relationship("Attendance", back_populates="student")
 
 
