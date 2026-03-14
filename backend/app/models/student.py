@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from app.database import Base
-from sqlalchemy.orm import relationship # Thêm import
+from sqlalchemy.orm import relationship
 
 class Student(Base):
     

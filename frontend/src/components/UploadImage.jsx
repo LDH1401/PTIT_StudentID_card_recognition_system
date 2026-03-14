@@ -8,7 +8,7 @@ const UploadImage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // --- HÀM MỚI: TẠO TIẾNG "TÍT" BẰNG WEB AUDIO API ---
+
   const playSuccessSound = () => {
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -25,7 +25,6 @@ const UploadImage = () => {
     gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
     oscillator.stop(audioCtx.currentTime + 0.2);
   };
-  // --------------------------------------------------
 
   // Hàm chuyển đổi ảnh Base64 từ Webcam thành dạng File (Blob)
   const dataURLtoBlob = (dataurl) => {
@@ -92,7 +91,7 @@ const UploadImage = () => {
   return (
     <div className="upload-wrapper">
       <div className="upload-container">
-        <h2 className="upload-title">Điểm Danh Bằng Thẻ Sinh Viên PTIT</h2>
+        <h2 className="upload-title">Điểm Danh Bằng Thẻ Sinh Viên</h2>
 
         {/* Khung Live Camera */}
         <div className="webcam-container">
@@ -123,17 +122,6 @@ const UploadImage = () => {
           {!error && studentId && (
             <div className="result-box result-success">
               ✅ Điểm danh thành công! <br />
-              <span
-                style={{
-                  fontSize: "26px",
-                  fontWeight: "bold",
-                  display: "block",
-                  marginTop: "8px",
-                  color: "#d12027",
-                }}
-              >
-                {studentId}
-              </span>
             </div>
           )}
           {!error && !studentId && !isLoading && (
