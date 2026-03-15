@@ -1,21 +1,50 @@
 import os
 import shutil
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+import json
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.database import get_db
-
 from app.services.pipeline_service import process_student_card
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/attendance", tags=["Attendance"])
 
+# --- TRẠM QUẢN LÝ WEBSOCKET ---
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+manager = ConnectionManager()
+
+# Mở đường ống WebSocket tại địa chỉ: ws://127.0.0.1:8000/attendance/ws
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+# --- CÁC API XỬ LÝ ĐIỂM DANH ---
+
 @router.post("/checkin")
 async def checkin(file: UploadFile = File(...), db: Session = Depends(get_db)):
-
     temp_file_path = f"temp_{file.filename}"
-    
     try:
-
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
@@ -24,7 +53,6 @@ async def checkin(file: UploadFile = File(...), db: Session = Depends(get_db)):
         if not student_code or student_code == "Không nhận diện được":
             return {"success": False, "message": "Không đọc được mã sinh viên, vui lòng thử lại!"}
 
-        # kiểm tra xem sinh viên có trong danh sách lớp không
         student = crud.get_student_by_code(db, student_code=student_code)
         if not student:
             return {
@@ -33,9 +61,13 @@ async def checkin(file: UploadFile = File(...), db: Session = Depends(get_db)):
                 "message": "Bạn không có trong danh sách lớp!"
             }
 
-
         crud.record_attendance(db, student_code=student_code)
 
+        # THÀNH CÔNG: Bắn tín hiệu WebSocket cho React xóa tên
+        await manager.broadcast(json.dumps({
+            "type": "CHECKIN_SUCCESS",
+            "student_code": student.student_code
+        }))
 
         return {
             "success": True,
@@ -52,22 +84,23 @@ async def checkin(file: UploadFile = File(...), db: Session = Depends(get_db)):
             os.remove(temp_file_path)
 
 
-from pydantic import BaseModel
-
-# Tạo một Schema nhỏ để nhận dữ liệu JSON từ React gửi lên
 class ManualCheckinRequest(BaseModel):
     student_code: str
 
 @router.post("/manual")
-def manual_checkin(request: ManualCheckinRequest, db: Session = Depends(get_db)):
+async def manual_checkin(request: ManualCheckinRequest, db: Session = Depends(get_db)):
     try:
-        # 1. Kiểm tra xem sinh viên có trong lớp không
         student = crud.get_student_by_code(db, student_code=request.student_code)
         if not student:
             raise HTTPException(status_code=404, detail="Không tìm thấy sinh viên")
 
-        # 2. Ghi nhận điểm danh
         crud.record_attendance(db, student_code=request.student_code)
+        
+        # THÀNH CÔNG: Bắn tín hiệu WebSocket cho React
+        await manager.broadcast(json.dumps({
+            "type": "CHECKIN_SUCCESS",
+            "student_code": request.student_code
+        }))
         
         return {
             "success": True, 
@@ -77,9 +110,15 @@ def manual_checkin(request: ManualCheckinRequest, db: Session = Depends(get_db))
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.delete("/reset")
-def reset_all_attendance(db: Session = Depends(get_db)):
+async def reset_all_attendance(db: Session = Depends(get_db)):
     try:
         crud.reset_attendance(db)
+        
+        # THÀNH CÔNG: Bắn tín hiệu yêu cầu React tải lại toàn bộ bảng
+        await manager.broadcast(json.dumps({
+            "type": "RESET_SUCCESS"
+        }))
+
         return {"success": True, "message": "Đã làm mới danh sách điểm danh"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

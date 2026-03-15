@@ -10,7 +10,36 @@ const Dashboard = () => {
   const [newName, setNewName] = useState('');
 
   useEffect(() => {
+    // 1. Tải danh sách lần đầu
     fetchStudents();
+
+    // 2. Mở kết nối WebSocket lắng nghe tự động
+    const ws = new WebSocket('ws://127.0.0.1:8000/attendance/ws');
+
+    ws.onopen = () => {
+      console.log("Đã kết nối Real-time với Backend");
+    };
+
+    // 3. Xử lý khi nhận được tín hiệu từ máy chủ
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
+      if (data.type === 'CHECKIN_SUCCESS') {
+        const checkedInCode = data.student_code;
+        // Tự động cập nhật lại danh sách vắng mặt
+        setAbsentStudents((prevStudents) => 
+          prevStudents.filter(stu => stu.student_code !== checkedInCode)
+        );
+      }
+      else if (data.type === 'RESET_SUCCESS') {
+        fetchStudents();
+      }
+    };
+
+    // 4. Ngắt kết nối khi chuyển trang
+    return () => {
+      ws.close();
+    };
   }, []);
 
   const fetchStudents = async () => {
@@ -68,7 +97,8 @@ const Dashboard = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "Có lỗi xảy ra khi điểm danh");
 
-      setAbsentStudents(absentStudents.filter(stu => stu.student_code !== studentCode));
+      // Đã xóa dòng lệnh setAbsentStudents ở đây vì WebSocket sẽ báo cho hệ thống tự xóa
+
     } catch (err) {
       console.error(err);
       alert(`Lỗi: ${err.message}`);
@@ -83,7 +113,7 @@ const Dashboard = () => {
       if (!response.ok) throw new Error("Lỗi khi làm mới dữ liệu");
       
       alert("Đã làm mới danh sách thành công!");
-      fetchStudents(); 
+      // Không cần gọi fetchStudents() ở đây nữa vì WebSocket đã báo hiệu
     } catch (err) {
       console.error(err);
       alert("Lỗi: Không thể làm mới dữ liệu.");
@@ -100,7 +130,6 @@ const Dashboard = () => {
 
       <div className="dashboard-content">
         
-        {/* CỘT TRÁI: FORM */}
         <div className="dashboard-card card-left">
           <h2 className="card-title bordered">➕ Thêm Sinh Viên</h2>
           <form onSubmit={handleAddStudent} className="student-form">
@@ -128,7 +157,6 @@ const Dashboard = () => {
           </form>
         </div>
 
-
         <div className="dashboard-card card-right">
           
           <div className="card-title-wrapper">
@@ -149,7 +177,7 @@ const Dashboard = () => {
               <thead>
                 <tr className="table-head-row">
                   <th>STT</th>
-                  <th>Sinh Viên</th> {/* Gộp cột MSSV và Họ Tên lại */}
+                  <th>Sinh Viên</th>
                   <th>Trạng thái</th>
                   <th>Điểm danh  </th>
                 </tr>
@@ -159,7 +187,6 @@ const Dashboard = () => {
                   <tr key={stu.id || index} className="table-body-row">
                     <td>{index + 1}</td>
                     
-                    {/* KHỐI PROFILE SINH VIÊN MỚI XỊN XÒ */}
                     <td>
                       <div className="student-profile">
                         <div className="avatar">👤</div>
