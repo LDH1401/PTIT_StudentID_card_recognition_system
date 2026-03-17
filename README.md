@@ -1,7 +1,7 @@
 # Hệ thống điểm danh \_ nhận diện MSSV
 
 <figure align="center">
-  <img src="./images/attendance.jpg" alt="Trang điểm danh" />
+  <img src="./images/test.jpg" alt="Trang điểm danh" />
   <figcaption><i>Giao diện điểm danh</i></figcaption>
 </figure>
 
@@ -16,16 +16,14 @@
 
 ### Backend
 
-- **FastAPI:** Xây dựng hệ thống RESTful API với hiệu năng cực cao, xử lý mượt mà các luồng request/response thời gian thực.
+- **FastAPI:** Xây dựng hệ thống RESTful API
 - **SQLAlchemy:** ORM (Object-Relational Mapping) để tương tác an toàn và tiện lợi với cơ sở dữ liệu.
 - **Pydantic:** Validation dữ liệu đầu vào/đầu ra chuẩn xác.
 
 ### Database
 
-- **MySQL:** Lưu trữ thông tin sinh viên và lịch sử điểm danh với cấu trúc quan hệ (Relational Database) chặt chẽ.
+- **MySQL:** Lưu trữ thông tin sinh viên và lịch sử điểm danh với cấu trúc quan hệ
 
 ### Frontend
 
 - **ReactJS:** Xây dựng giao diện Single-Page Application (SPA)
-- **Vite:** Build tool siêu tốc độ cho Frontend.
-- **react-webcam:** Truy xuất và điều khiển luồng video trực tiếp từ thiết bị người dùng.

@@ -116,7 +116,7 @@ const UploadImage = () => {
         <div style={{ marginTop: '20px' }}>
           {studentId ? (
             <div className="result-box result-success">
-              ✅ Thành công! <br />
+              Điểm danh thành công! <br />
               <strong>{studentId}</strong>
             </div>
           ) : error === "Lỗi kết nối đến máy chủ" ? (
